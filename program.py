@@ -1,11 +1,12 @@
 import numpy as np
 
-a = np.array(10)
+a = np.random.randn(3, 2)
+b = np.random.randn(2, 1)
 
-for i in a:
-    print(i)
+z = np.matmul(a, b)
+
+relu = lambda x : max(0, x)
 
 
-b = np.arange(19)
 
-# i like noodles
+
