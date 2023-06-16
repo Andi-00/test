@@ -1,12 +1,7 @@
 import numpy as np
+import tensorflow as tf
 
-a = np.random.randn(3, 2)
-b = np.random.randn(2, 1)
-
-z = np.matmul(a, b)
-
-relu = lambda x : max(0, x)
-
-
+string = tf.Variable("Hiiii", tf.string)
+number = tf.Variable(12, tf.int16)
 
 
