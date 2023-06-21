@@ -5,12 +5,16 @@ import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Dense
 
+plt.show(block = False)
+
 # Generate the random values 
 # Input shape (n, 2), Output shape (n, )
-n = 500
+n = 2000
 
-x = np.random.uniform(-10, 10, n)
-y = np.random.uniform(-10, 10, n)
+m = 100
+
+x = np.random.uniform(-m, m, n)
+y = np.random.uniform(-m, m, n)
 
 values = np.abs(x - y)
 values = tf.constant(values)
@@ -31,6 +35,7 @@ model.add(Dense(32, input_shape = (2, ), activation='relu'))
 model.add(Dense(64, activation='relu'))
 model.add(Dense(128, activation='relu'))
 model.add(Dense(64, activation='relu'))
+model.add(Dense(32, activation='relu'))
 model.add(Dense(1))
 
 model.summary()
@@ -38,28 +43,34 @@ model.summary()
 
 
 model.compile(optimizer='adam', loss='mse')
-history = model.fit(l, values, epochs=100, verbose=0)
+history = model.fit(l, values, epochs = 100, verbose=2)
 
 
 mse = history.history['loss']
 epochs = range(1, len(mse) + 1)
 
 # Plot the MSE versus epoch
-plt.plot(epochs, mse, 'b-o')
-plt.xlabel('Epoch')
-plt.ylabel('Mean Squared Error')
-plt.title('Mean Squared Error vs. Epoch')
-plt.grid(True)
+fig, ax = plt.subplots()
+
+ax.plot(epochs, mse, 'b-o', color = "crimson")
+ax.set_xlabel('Epoch')
+ax.set_ylabel('Mean Squared Error')
+ax.set_title('Mean Squared Error vs. Epoch')
+ax.grid(True)
 plt.show()
 
+n = 100
+grid = np.array([tf.reshape(np.array([np.array([i, j]) for i in range(n)]), [n, -1]) for j in range(n)])
+grid = tf.reshape(grid, [len(grid) ** 2, -1])
+
+predict = model.predict(grid)
+predict = tf.reshape(predict, [n, n,])
+
+comp = np.array([np.array([abs(i - j) for i in range(n)]) for j in range(n)])
 
 
-x = 120
-y = 40
 
-l = np.c_[x, y]
-
-a = np.abs(x - y)
-b = model.predict(l)
-print(a)
-print(b)
+ax = sns.heatmap(np.abs(predict - comp), cmap = "mako")
+ax.invert_yaxis()
+# plt.pcolormesh(predict)
+plt.show()
