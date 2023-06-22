@@ -17,11 +17,13 @@ plt.rcParams["scatter.marker"] = "."
 plt.rcParams["axes.grid"] = False
 
 # Create the data
-n = 200
-f = np.random.uniform(1, 10, n)
-a = np.random.uniform(1, 5, n)
+m = 200
 
-x = np.arange(0, 10, 0.1)
+n = 1000
+f = np.random.uniform(1, 11, n)
+a = np.random.uniform(1, 11, n)
+
+x = np.linspace(0, 10, m)
 
 result = np.c_[f, a]
 data = np.array([np.array([np.array([x[i], a[j] * np.sin(f[j] * x[i])]) for i in range(len(x))]) for j in range(len(a))])
@@ -31,24 +33,26 @@ print(result.shape)
 
 model = Sequential()
 
-model.add(Dense(32, input_shape = (100, 2, ), activation = "relu"))
-model.add(Dense(64, activation = "relu"))
+neurons = 128
+
+model.add(Dense(neurons, input_shape = (m, 2, ), activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
 model.add(Flatten())
-model.add(Dense(64, activation = "relu"))
-model.add(Dense(64, activation = "relu"))
-model.add(Dense(128, activation = "relu"))
-model.add(Dense(128, activation = "relu"))
-model.add(Dense(128, activation = "relu"))
-model.add(Dense(64, activation = "relu"))
-model.add(Dense(64, activation = "relu"))
-model.add(Dense(32, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
 model.add(Dense(2))
 
 
 model.summary()
 print(model.output_shape)
 
-model.compile(optimizer = "adam", loss = 'mean_absolute_percentage_error')
+model.compile(optimizer = "adam", loss = 'mse')
 history = model.fit(data, result, epochs = 60, verbose = 1)
 
 mse = history.history['loss']
@@ -62,7 +66,7 @@ plt.xlabel('Epoch')
 plt.ylabel('Mean Squared Error')
 plt.title('Mean Squared Error vs. Epoch')
 plt.grid(True)
-plt.show()
+plt.savefig("mse_plot.png")
 
 f0 = np.arange(1, 11)
 a0 = np.arange(1, 11)
@@ -91,7 +95,7 @@ ax1.set_ylabel("Amplitude")
 ax1.set_xlabel("Frequenz")
 ax2.set_xlabel("Frequenz")
 
-plt.show()
+plt.savefig("grid.png")
 
 testf = np.array([np.array([np.array([f, a]) for f in f0]) for a in a0[:: -1]])[:, :, 0]
 testa = np.array([np.array([np.array([f, a]) for f in f0]) for a in a0[:: -1]])[:, :, 1]
@@ -107,4 +111,4 @@ ax1.set_ylabel("Amplitude")
 ax1.set_xlabel("Frequenz")
 ax2.set_xlabel("Frequenz")
 
-plt.show()
+plt.savefig("delta_grid.png")
