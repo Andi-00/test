@@ -9,9 +9,9 @@ plt.show(block = False)
 
 # Generate the random values 
 # Input shape (n, 2), Output shape (n, )
-n = 2000
+n = 1000
 
-m = 100
+m = 200
 
 x = np.random.uniform(-m, m, n)
 y = np.random.uniform(-m, m, n)
