@@ -118,7 +118,7 @@ plt.savefig("grid.png")
 testf = np.array([np.array([np.array([f, a]) for f in f0]) for a in a0[:: -1]])[:, :, 0]
 testa = np.array([np.array([np.array([f, a]) for f in f0]) for a in a0[:: -1]])[:, :, 1]
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (18, 8), sharey = True)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (20, 9), sharey = True)
 
 sns.heatmap(abs(f - testf), ax = ax1, cmap = "mako", cbar_ax = None, yticklabels = t[::-1], xticklabels = t)
 sns.heatmap(abs(a - testa), ax = ax2, cmap = "mako", yticklabels = t[::-1], xticklabels = t)
