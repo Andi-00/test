@@ -5,94 +5,157 @@ import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Dense
 
+plt.rcParams['pgf.rcfonts'] = False
+plt.rcParams['font.serif'] = []
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['text.usetex'] = True
+plt.rcParams['axes.formatter.useoffset'] = False
+plt.rcParams['lines.linewidth'] = 1.5
+plt.rcParams['errorbar.capsize'] = 2
 
-plt.rcParams["axes.titlesize"] = 32
-plt.rcParams["axes.labelsize"] = 30
-plt.rcParams["axes.titleweight"] = "bold"
-plt.rcParams["xtick.labelsize"] = 22
-plt.rcParams["ytick.labelsize"] = 22
-plt.rcParams["legend.fontsize"] = 22
-plt.rcParams["axes.linewidth"] = 1.2
-plt.rcParams["scatter.marker"] = "."
-plt.rcParams["axes.grid"] = True
+plt.rcParams['grid.linewidth'] = 0.5
+plt.rcParams['axes.labelsize'] = 14
+plt.rcParams['axes.titlesize'] = 14
+plt.rcParams['xtick.labelsize'] = 12
+plt.rcParams['ytick.labelsize'] = 12
+plt.rcParams['legend.title_fontsize'] = 12
+plt.rcParams['legend.fontsize'] = 12
+plt.rcParams['savefig.dpi'] = 300
+plt.rcParams['savefig.bbox'] = 'tight'
+plt.rcParams['savefig.pad_inches'] = 0.1
+
+#plt.rcParams['savefig.transparent'] = True
+plt.rcParams['figure.figsize'] = (8, 4)
 
 
 
-a = 5
+a = 8
 b = 0.2
 
-n = 30
+n = 200
 
-x_train = np.linspace(-a, a, n)
-noi_train = np.random.normal(0, 0.2, len(x_train))
-y_train = x_train ** 2 * np.exp(-b * x_train ** 2)
+
+x_train = np.random.uniform(-a, a, n)
+noi_train = np.random.normal(0, 0.1, len(x_train))
+y_train = x_train ** 2 * np.exp(-b * x_train ** 2) + noi_train
+
+c = int(0.8 * n)
+d = int(0.9 * n)
+
+x_valid = x_train[c : d]
+x_test = x_train[d :]
+x_train = x_train[: c]
+
+y_valid = y_train[c : d]
+y_test = y_train[d :]
+y_train = y_train[: c]
+
+neurons = 128
 
 
 model = Sequential()
 
-model.add(Dense(32, input_shape = (1, ), activation = "relu"))
-model.add(Dense(32, activation = "relu"))
-model.add(Dense(32, activation = "relu"))
-model.add(Dense(32, activation = "relu"))
-model.add(Dense(32, activation = "relu"))
-model.add(Dense(16, activation = "relu"))
-model.add(Dense(8, activation = "relu"))
+model.add(Dense(neurons, input_shape = (1, ), activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
+model.add(Dense(neurons, activation = "relu"))
 model.add(Dense(1))
 
 
-model.summary()
+def schedular(epoch, lr):
+    if epoch < 10: return lr
+    else: return lr * tf.math.exp(-0.001)
+
+lr_schedule = tf.keras.callbacks.LearningRateScheduler(schedular)
+
+early_stopping = tf.keras.callbacks.EarlyStopping(monitor = "val_loss", patience = 200, restore_best_weights = True, verbose = 1)
+
+
 model.compile(optimizer = "adam", loss = "mse")
 
-history = model.fit(x_train, y_train, epochs = 1000, verbose = 2, validation_split = 0.1)
+history1 = model.fit(x_train, y_train, validation_data = (x_valid, y_valid), callbacks = [lr_schedule, early_stopping], epochs = 1000, verbose = 2)
 
-mse = history.history['loss']
-v_loss = history.history["val_loss"]
-epochs = range(1, len(mse) + 1)
+model1 = Sequential()
 
+model1.add(Dense(neurons, input_shape = (1, ), activation = "relu"))
+model1.add(Dense(neurons, activation = "relu"))
+model1.add(Dense(neurons, activation = "relu"))
+model1.add(Dense(neurons, activation = "relu"))
+model1.add(Dense(neurons, activation = "relu"))
+model1.add(Dense(neurons, activation = "relu"))
+model1.add(Dense(neurons, activation = "relu"))
+model1.add(Dense(neurons, activation = "relu"))
+model1.add(Dense(neurons, activation = "relu"))
+model1.add(Dense(1))
 
+model1.compile(optimizer = "adam", loss = "mse")
+history2 = model1.fit(x_train, y_train, validation_data = (x_valid, y_valid), epochs = 1000, verbose = 2)
 
-x_test = np.linspace(-a, a, n)
-noi = np.random.normal(0, 0.2, len(x_test))
-y_test = x_test ** 2 * np.exp(-b * x_test ** 2)
+histories = [history1, history2]
+names = ["A", "B"]
+models = [model, model1]
 
+for i in range(len(histories)):
 
-ypre = model.predict(x_test)
+    history = histories[i]
+    c = names[i]
+    model = models[i]
 
-# Plot the MSE versus epoch
-fig, ax = plt.subplots(figsize = (16, 9))
-
-ax.plot(epochs, mse, color = "crimson")
-ax.plot(epochs, v_loss, color = "royalblue")
-ax.set_xlabel('Epoch')
-ax.set_ylabel('Mean Squared Error')
-ax.set_title('Mean Squared Error vs. Epoch', y = 1.02)
-ax.grid(True)
-
-ax.set_yscale("log")
-
-plt.savefig("./loss.png")
-
-
-# Plot of the results
-
-fig, ax = plt.subplots(figsize = (16, 9))
-ax.scatter(x_test, y_test, color = "royalblue", label = "Test Data", s = 50)
-ax.scatter(x_train, y_train, color = "crimson", label = "Train Data", s = 50)
-
-ax.plot(x_test, ypre, color = "black", lw = 3, label = "Prediction")
-
-mi = min(y_test)
-ma = max(y_test)
-
-d = ma - mi
-
-ax.set_ylim(mi - d / 10, ma + d / 10)
+    mse = history.history['loss']
+    v_loss = history.history["val_loss"]
+    epochs = range(1, len(mse) + 1)
 
 
-ax.set_ylabel("y")
-ax.set_xlabel("x")
-ax.set_title("Comparison - Test Data vs. ML Prediction", y = 1.02)
 
-ax.legend()
+    print(model.evaluate(x_test, y_test))
 
-plt.savefig("./results.png")
+
+
+    x = np.linspace(-a, a, 1000)
+    ypre = model.predict(x)
+
+    # Plot the MSE versus epoch
+    fig, ax = plt.subplots()
+
+    ax.plot(epochs, mse, color = "crimson", label = "Training loss")
+    ax.plot(epochs, v_loss, color = "royalblue", label = "Validation loss")
+    ax.set_xlabel('Epoch')
+    ax.set_ylabel('Mean Squared Error')
+    ax.legend()
+    ax.set_title(c, y = 1.02)
+
+
+    ax.set_yscale("log")
+
+    ax.grid()
+
+    plt.savefig("./loss_{}.png".format(c))
+
+
+    # Plot of the results
+
+    fig, ax = plt.subplots()
+
+    ax.scatter(x_train, y_train, color = "crimson", label = "Train Data")
+    ax.scatter(x_valid, y_valid, color = "royalblue", label = "Validation Data")
+
+    ax.plot(x, ypre, color = "black", label = "Prediction", zorder = 15)
+
+    ax.plot(x, x ** 2 * np.exp(-b * x ** 2), color = "black", ls = "--", label = "True $f(x)$", zorder = 10)
+
+
+
+    # ax.set_ylim(mi - d / 10, ma + d / 10)
+
+
+    ax.set_ylabel("$y$")
+    ax.set_xlabel("$x$")
+    ax.set_title(c, y = 1.02)
+
+    ax.legend()
+    ax.grid()
+
+    plt.savefig("./results_{}.png".format(c))
